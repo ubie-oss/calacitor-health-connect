@@ -38,7 +38,7 @@ export interface HealthConnectPlugin {
   openHealthConnectSetting(): Promise<void>;
 }
 export type HealthConnectAvailability = 'Available' | 'NotInstalled' | 'NotSupported';
-export type RecordType = 
+export type RecordType =
   | 'ActiveCaloriesBurned'
   | 'BasalBodyTemperature'
   | 'BasalMetabolicRate'
@@ -51,6 +51,7 @@ export type RecordType =
   | 'OxygenSaturation'
   | 'RespiratoryRate'
   | 'RestingHeartRate'
+  | 'SleepSession'
   | 'Steps'
   | 'Weight';
 type RecordBase = {
@@ -161,6 +162,14 @@ export type Record =
       beatsPerMinute: number;
     }
   | {
+      type: 'SleepSession';
+      startTime: Date;
+      startZoneOffset?: string;
+      endTime: Date;
+      endZoneOffset?: string;
+      stages: SleepStage[];
+    }
+  | {
       type: 'Steps';
       startTime: Date;
       startZoneOffset?: string;
@@ -234,5 +243,10 @@ export type Mass = {
 export type BloodGlucose = {
   unit: 'milligramsPerDeciliter' | 'millimolesPerLiter';
   value: number;
+};
+export type SleepStage = {
+  startTime: Date;
+  endTime: Date;
+  stage: number;
 };
 export {};
