@@ -108,6 +108,13 @@ internal fun JSONObject.toRecord(): Record {
             zoneOffset = this.getZoneOffsetOrNull("zoneOffset"),
             beatsPerMinute = this.getLong("beatsPerMinute"),
         )
+        "SleepSession" -> SleepSessionRecord(
+            startTime = this.getInstant("startTime"),
+            startZoneOffset = this.getZoneOffsetOrNull("startZoneOffset"),
+            endTime = this.getInstant("endTime"),
+            endZoneOffset = this.getZoneOffsetOrNull("endTimeOffset"),
+            stages = this.getSleepStagesList("stages")
+        )
         "Steps" -> StepsRecord(
             startTime = this.getInstant("startTime"),
             startZoneOffset = this.getZoneOffsetOrNull("startZoneOffset"),
@@ -201,6 +208,13 @@ internal fun Record.toJSONObject(): JSONObject {
                 obj.put("time", this.time)
                 obj.put("zoneOffset", this.zoneOffset?.toJSONValue())
                 obj.put("beatsPerMinute", this.beatsPerMinute)
+            }
+            is SleepSessionRecord -> {
+                obj.put("startTime", this.startTime)
+                obj.put("startZoneOffset", this.startZoneOffset?.toJSONValue())
+                obj.put("endTime", this.endTime)
+                obj.put("endZoneOffset", this.endZoneOffset?.toJSONValue())
+                obj.put("stages", this.stages.toSleepSessionRecordStagesJSONArray())
             }
             is StepsRecord -> {
                 obj.put("startTime", this.startTime)
@@ -452,4 +466,31 @@ internal fun JSONObject.getPercentage(name: String): Percentage {
     val obj = requireNotNull(this.getJSONObject(name))
     val value = obj.getDouble("value")
     return Percentage(value)
+}
+
+internal fun SleepSessionRecord.Stage.toJSONObject(): JSONObject {
+    return JSONObject().also { jsonObject ->
+        jsonObject.put("startTime", this.startTime)
+        jsonObject.put("endTime", this.endTime)
+        jsonObject.put("stage", this.stage)
+    }
+}
+
+internal fun List<SleepSessionRecord.Stage>.toSleepSessionRecordStagesJSONArray(): JSONArray {
+    return JSONArray().also { jsonArray ->
+        this.forEach { stage ->
+            jsonArray.put(stage.toJSONObject())
+        }
+    }
+}
+
+internal fun JSONObject.getSleepStagesList(name: String): List<SleepSessionRecord.Stage> {
+    val jsonArray = this.getJSONArray(name)
+    return jsonArray.toList<JSONObject>().map { jsonObj ->
+        SleepSessionRecord.Stage(
+            startTime = jsonObj.getInstant("startTime"),
+            endTime = jsonObj.getInstant("endTime"),
+            stage = jsonObj.getInt("stage")
+        )
+    }
 }
